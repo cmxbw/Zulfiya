@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Зульфия: Викторина</title>
+    <style>
+        :root {
+            --bg-color: #121417;
+            --card-bg: #1e1f20;
+            --accent-color: #a8c7fa;
+            --text-main: #e3e3e3;
+            --text-sub: #c4c7c5;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image:
+                radial-gradient(circle at 15% 50%, rgba(45, 60, 50, 0.3) 0%, transparent 45%),
+                radial-gradient(circle at 85% 50%, rgba(30, 35, 70, 0.3) 0%, transparent 45%);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Roboto, -apple-system, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .difficulty-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .diff-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-sub);
+            padding: 10px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .diff-btn.active {
+            background: var(--accent-color);
+            color: #121417;
+        }
+
+        .card-container {
+            perspective: 1200px;
+            width: 480px;
+            height: 520px;
+            cursor: pointer;
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-style: preserve-3d;
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 45px;
+            box-sizing: border-box;
+            border-radius: 32px;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .front {
+            background: var(--card-bg);
+            font-size: 22px;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        .back {
+            background: #28292a;
+            transform: rotateY(180deg);
+            font-size: 19px;
+            color: var(--text-sub);
+            line-height: 1.5;
+        }
+
+        .hint {
+            position: absolute;
+            bottom: 30px;
+            font-size: 11px;
+            color: #80868b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--accent-color);
+            padding: 12px 24px;
+            border-radius: 100px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 18px;
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.1;
+            cursor: not-allowed;
+        }
+
+        #counter {
+            font-size: 16px;
+            color: var(--text-sub);
+            min-width: 80px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="difficulty-selector">
+        <button class="diff-btn active" onclick="setDifficulty('easy', this)">Базовый</button>
+        <button class="diff-btn" onclick="setDifficulty('medium', this)">Средний</button>
+        <button class="diff-btn" onclick="setDifficulty('blitz', this)">Сложный</button>
+    </div>
+
+    <div class="card-container" onclick="toggleFlip()">
+        <div class="card" id="card">
+            <div class="card-face front">
+                <div id="question">Загрузка...</div>
+                <div class="hint">Нажмите для ответа</div>
+            </div>
+            <div class="card-face back">
+                <div id="answer">...</div>
+                <div class="hint">Вернуться к вопросу</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="nav-btn" id="prevBtn" onclick="event.stopPropagation(); prevCard();">←</button>
+        <span id="counter">1 / 5</span>
+        <button class="nav-btn" id="nextBtn" onclick="event.stopPropagation(); nextCard();">→</button>
+    </div>
+
+    <script>
+        const data = {
+            easy: [
+                { q: "Какое конкретное профессиональное учебное заведение окончила Зульфия?", a: "Она окончила женское педагогическое училище." },
+                { q: "В каком году и в какой день Зульфие официально было присвоено звание «Народный поэт Узбекской ССР»?", a: "24 ноября 1965 года." },
+                { q: "Депутатом какого органа власти она избиралась (10-го и 11-го созывов)?", a: "Верховного Совета Узбекской ССР." },
+                { q: "Как назывался самый первый сборник стихов поэтессы (1932)?", a: "«Страницы жизни»; темы молодежи, дружбе и красоты человеческой души." },
+                { q: "На каком известном кладбище в Ташкенте похоронена поэтесса?", a: "На Чигатайском кладбище." }
+            ],
+            medium: [
+                { q: "Назовите фамилии как минимум трёх известных советских переводчиков, работавших над её текстами.", a: "Ю. Нейман, С. Липкин, Н. Гребнев, С. Сомова." },
+                { q: "Для какого именно оперного произведения Зульфия написала либретто?", a: "Либретто к опере «Зайнаб и Омон»." },
+                { q: "В честь какого выдающегося деятеля культуры была названа премия УзССР, полученная ею в 1970 году?", a: "Государственная премия Узбекской ССР имени Хамзы." },
+                { q: "В каком году памятник Зульфие в Ташкенте заменили на бронзовый?", a: "Установлен 1 марта 2008 г. (гипс), заменён на бронзу в 2014 году." },
+                { q: "Сколько раз Зульфия была награждена орденом Ленина?", a: "Дважды: в 1959 и в 1984 годах." }
+            ],
+            blitz: [
+                { q: "Драматургия: Назовите оперу с её либретто и автора поэмы, ставшей основой для её пьесы «Семург»?", a: "Опера «Зайнаб и Омон». Пьеса «Семург» создана по мотивам поэмы её мужа — Хамида Алимджана." },
+                { q: "Высшее признание: За какую книгу стихов 1974 года и какой цикл она получила Госпремию СССР?", a: "За книгу стихов «Строки памяти» (1974) и поэтический цикл «Радуга»." },
+                { q: "Премия Зульфии: Каков возрастной диапазон для претенденток и в какой день её вручают?", a: "От 14 до 30 лет. Вручается ежегодно в канун 8 марта." },
+                { q: "Первый сборник: Какие три основные философские темы поднимались в «Страницах жизни»?", a: "Темы молодежи, дружбы и красоты человеческой души." },
+                { q: "Государственные награды: Какое звание она получила в 1984 году и какой орден в 1994 году?", a: "1984 — Герой Социалистического Труда. 1994 — орден «Дустлик»." }
+            ]
+        };
+
+        let currentDifficulty = 'easy';
+        let cards = [];
+        let currentIndex = 0;
+
+        function setDifficulty(level, btn) {
+            document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentDifficulty = level;
+            initLevel();
+        }
+
+        function initLevel() {
+            cards = [...data[currentDifficulty]]; // Можно добавить .sort(() => Math.random() - 0.5) для перемешивания
+            currentIndex = 0;
+            updateCard();
+        }
+
+        function toggleFlip() { document.getElementById('card').classList.toggle('flipped'); }
+
+        function updateCard() {
+            const cardEl = document.getElementById('card');
+            cardEl.classList.remove('flipped');
+            setTimeout(() => {
+                document.getElementById('question').textContent = cards[currentIndex].q;
+                document.getElementById('answer').textContent = cards[currentIndex].a;
+                document.getElementById('counter').textContent = `${currentIndex + 1} / ${cards.length}`;
+                document.getElementById('prevBtn').disabled = currentIndex === 0;
+                document.getElementById('nextBtn').disabled = currentIndex === cards.length - 1;
+            }, 150);
+        }
+
+        function nextCard() { if (currentIndex < cards.length - 1) { currentIndex++; updateCard(); } }
+        function prevCard() { if (currentIndex > 0) { currentIndex--; updateCard(); } }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') toggleFlip();
+            if (e.code === 'ArrowRight') nextCard();
+            if (e.code === 'ArrowLeft') prevCard();
+        });
+
+        initLevel();
+    </script>
+</body>
+
+</html>
