@@ -6,83 +6,107 @@
     <title>9 Б класс Зульфия</title>
     <style>
         :root {
-            --c-1: #00d2ff;
-            --c-2: #3a7bd5;
-            --c-3: #6a11cb;
-            --c-4: #2575fc;
-            --accent: #fff;
+            --ios-blue: #007aff;
+            --ios-purple: #af52de;
+            --ios-pink: #ff2d55;
+            --active-accent: var(--ios-blue);
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'SF Pro Display', -apple-system, sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
 
         body {
-            background: #050505;
+            background: #000;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
             height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            color: white;
         }
 
-        /* АНИМИРОВАННЫЙ ФОН "АВРОРА" */
-        .aurora-bg {
+        /* ЖИВОЙ ФОН С ЧАСТИЦАМИ */
+        canvas#particles {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: -1;
+            top: 0; left: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .ambient-glow {
+            position: fixed;
+            width: 80vw; height: 80vh;
+            background: radial-gradient(circle, var(--active-accent), transparent 70%);
             filter: blur(100px);
-            opacity: 0.6;
+            opacity: 0.15;
+            z-index: 0;
+            transition: background 1s ease;
         }
 
-        .blob {
-            position: absolute;
-            width: 500px; height: 500px;
-            border-radius: 50%;
-            animation: move 20s infinite alternate;
-        }
-
-        .b1 { background: var(--c-1); top: -10%; left: -10%; animation-delay: 0s; }
-        .b2 { background: var(--c-3); bottom: -10%; right: -10%; animation-delay: -5s; }
-        .b3 { background: var(--c-2); top: 40%; left: 30%; animation-delay: -10s; }
-
-        @keyframes move {
-            from { transform: translate(0, 0) scale(1); }
-            to { transform: translate(100px, 100px) scale(1.2); }
-        }
-
-        /* ШАПКА */
+        /* HEADER */
         header {
             position: absolute;
-            top: 40px;
-            text-align: center;
+            top: 5vh;
             z-index: 10;
+            text-align: center;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 14px;
+            background: var(--active-accent);
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            box-shadow: 0 0 25px var(--active-accent);
+            transition: 0.5s;
         }
 
         h1 {
-            font-weight: 800;
-            font-size: 32px;
-            letter-spacing: -1px;
-            background: linear-gradient(to bottom, #fff 40%, rgba(255,255,255,0.5));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 5px;
+            font-weight: 200;
+            letter-spacing: 2px;
+            font-size: clamp(20px, 5vw, 28px);
         }
 
-        .class-tag {
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 4px;
-            text-transform: uppercase;
-            color: var(--c-1);
-            text-shadow: 0 0 15px var(--c-1);
+        /* ВЫБОР СЛОЖНОСТИ */
+        .selector {
+            display: flex;
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(25px);
+            padding: 5px;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            margin-bottom: 30px;
+            z-index: 10;
         }
 
-        /* КАРТОЧКА: ЭФФЕКТ СТЕКЛА */
+        .tab {
+            padding: 10px 20px;
+            border-radius: 15px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #888;
+            cursor: pointer;
+            transition: 0.4s;
+        }
+
+        .tab.active {
+            background: #fff;
+            color: #000;
+            box-shadow: 0 10px 20px rgba(255,255,255,0.2);
+        }
+
+        /* КАРТОЧКА */
         .stage {
             width: 90vw;
-            max-width: 440px;
-            height: 520px;
+            max-width: 420px;
+            height: 500px;
             perspective: 2000px;
             z-index: 5;
         }
@@ -91,8 +115,7 @@
             width: 100%; height: 100%;
             position: relative;
             transform-style: preserve-3d;
-            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            cursor: pointer;
+            transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
         .card.flipped { transform: rotateY(180deg); }
@@ -102,229 +125,257 @@
             width: 100%; height: 100%;
             backface-visibility: hidden;
             border-radius: 40px;
-            padding: 50px 40px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(40px) saturate(150%);
+            padding: 40px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.01));
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(35px);
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            text-align: center;
-            box-shadow: 0 50px 100px rgba(0,0,0,0.5);
+            justify-content: space-between;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
         }
 
         .face.back {
             transform: rotateY(180deg);
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(15, 15, 15, 0.85);
         }
 
-        .q-label {
-            position: absolute;
-            top: 40px; left: 50%;
-            transform: translateX(-50%);
-            font-size: 11px;
-            font-weight: 900;
-            letter-spacing: 3px;
-            opacity: 0.4;
-        }
-
-        .text {
-            font-size: 28px;
-            font-weight: 600;
-            line-height: 1.3;
+        .content {
+            font-size: 24px;
+            font-weight: 500;
+            line-height: 1.4;
             letter-spacing: -0.5px;
         }
 
         .ans-text {
-            font-size: 20px;
+            font-size: 18px;
+            color: #d1d1d6;
+            line-height: 1.6;
             font-weight: 400;
-            color: #efefef;
-            line-height: 1.5;
         }
 
-        /* НАВИГАЦИЯ: НЕОНОВЫЕ КНОПКИ */
-        .controls {
-            margin-top: 50px;
+        /* КНОПКИ УПРАВЛЕНИЯ */
+        .nav {
+            margin-top: 35px;
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 30px;
             z-index: 10;
         }
 
-        .nav-btn {
-            width: 70px; height: 70px;
-            border-radius: 24px;
-            border: 1px solid rgba(255,255,255,0.1);
-            background: rgba(255,255,255,0.05);
-            backdrop-filter: blur(10px);
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            transition: 0.3s;
+        .circle-btn {
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            background: #fff;
+            border: none;
+            color: #000;
+            font-size: 22px;
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-
-        .nav-btn:hover {
-            background: white;
-            color: black;
-            transform: translateY(-5px);
-        }
-
-        .nav-btn:disabled { opacity: 0.1; transform: none; }
-
-        .mode-selector {
-            display: flex;
-            background: rgba(255,255,255,0.05);
-            padding: 5px;
-            border-radius: 20px;
-            margin-top: 30px;
-            z-index: 10;
-        }
-
-        .mode-btn {
-            padding: 10px 20px;
-            border-radius: 15px;
-            border: none;
-            background: none;
-            color: rgba(255,255,255,0.4);
-            font-weight: 600;
-            font-size: 13px;
             cursor: pointer;
             transition: 0.3s;
         }
 
-        .mode-btn.active {
-            background: var(--c-2);
-            color: white;
-            box-shadow: 0 5px 15px var(--c-2);
-        }
+        .circle-btn:active { transform: scale(0.9); }
+        .circle-btn:disabled { opacity: 0.15; cursor: not-allowed; }
+
+        .counter-box { text-align: center; }
 
         .progress-dots {
-            display: flex; gap: 8px; margin-top: 20px;
+            display: flex;
+            gap: 6px;
+            margin-top: 10px;
+            justify-content: center;
         }
 
         .dot {
-            width: 8px; height: 8px;
-            border-radius: 4px;
-            background: rgba(255,255,255,0.1);
+            width: 6px; height: 6px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
             transition: 0.4s;
         }
 
         .dot.active {
-            width: 30px;
-            background: white;
-            box-shadow: 0 0 20px white;
+            background: var(--active-accent);
+            box-shadow: 0 0 12px var(--active-accent);
+            transform: scale(1.4);
+        }
+
+        @media (max-width: 400px) {
+            .stage { height: 460px; }
+            .content { font-size: 21px; }
         }
     </style>
 </head>
 <body>
 
-    <div class="aurora-bg">
-        <div class="blob b1"></div>
-        <div class="blob b2"></div>
-        <div class="blob b3"></div>
-    </div>
+    <canvas id="particles"></canvas>
+    <div class="ambient-glow" id="glow"></div>
 
     <header>
-        <div class="class-tag">Digital Project</div>
+        <div class="badge" id="diff-badge">БАЗОВЫЙ</div>
         <h1>9 Б класс Зульфия</h1>
     </header>
 
+    <div class="selector">
+        <div class="tab active" onclick="setMode('easy', this)">Начальный</div>
+        <div class="tab" onclick="setMode('medium', this)">Средний</div>
+        <div class="tab" onclick="setMode('blitz', this)">Блиц</div>
+    </div>
+
     <div class="stage" onclick="flip()">
         <div class="card" id="card">
+            <!-- Лицевая сторона -->
             <div class="face front">
-                <div class="q-label">ВОПРОС</div>
-                <div class="text" id="q-text">...</div>
+                <div style="font-size: 10px; opacity: 0.5; letter-spacing: 2px;">ВОПРОС</div>
+                <div class="content" id="q-text">Загрузка...</div>
+                <div style="font-size: 11px; color: var(--active-accent); font-weight: 700;">НАЖМИТЕ ДЛЯ ОТВЕТА →</div>
             </div>
+            <!-- Обратная сторона -->
             <div class="face back">
-                <div class="q-label" style="color:var(--c-1)">ИНСАЙТ</div>
+                <div style="font-size: 10px; opacity: 0.5; letter-spacing: 2px; color: #32d74b;">ОТВЕТ</div>
                 <div class="ans-text" id="a-text">...</div>
+                <div style="font-size: 11px; opacity: 0.5;">НАЖМИТЕ, ЧТОБЫ СКРЫТЬ</div>
             </div>
         </div>
     </div>
 
-    <div class="controls">
-        <button class="nav-btn" id="prevBtn" onclick="event.stopPropagation(); prev();">←</button>
-        <div style="display:flex; flex-direction:column; align-items:center;">
-            <div id="counter" style="font-weight: 800; font-size: 20px;">1 / 5</div>
+    <div class="nav">
+        <button class="circle-btn" id="prevBtn" onclick="event.stopPropagation(); prev();">←</button>
+        <div class="counter-box">
+            <div id="counter" style="font-weight: 600; font-size: 16px; letter-spacing: 1px;">1 / 5</div>
             <div class="progress-dots" id="dots"></div>
         </div>
-        <button class="nav-btn" id="nextBtn" onclick="event.stopPropagation(); next();">→</button>
-    </div>
-
-    <div class="mode-selector">
-        <button class="mode-btn active" onclick="setMode('easy', this)">Начальный</button>
-        <button class="mode-btn" onclick="setMode('medium', this)">Средний</button>
-        <button class="mode-btn" onclick="setMode('blitz', this)">Блиц</button>
+        <button class="circle-btn" id="nextBtn" onclick="event.stopPropagation(); next();">→</button>
     </div>
 
     <script>
-        const data = {
+        const db = {
             easy: [
-                { q: "В каком учебном заведении училась Зульфия?", a: "В женском педагогическом училище." },
-                { q: "Когда ей присвоили звание Народного поэта УзССР?", a: "24 ноября 1965 года." },
-                { q: "Где она была депутатом в 10-11 созывах?", a: "В Верховном Совете Узбекской ССР." },
-                { q: "Как называлась её первая книга стихов?", a: "«Страницы жизни» (1932)." },
-                { q: "Где находится её могила?", a: "На Чигатайском кладбище в Ташкенте." }
+                { q: "Где Зульфия получила профессиональное образование?", a: "В женском педагогическом училище." },
+                { q: "Дата присвоения звания Народного поэта УзССР?", a: "24 ноября 1965 года." },
+                { q: "Депутатом какого органа она была в 10-11 созывах?", a: "Верховного Совета Узбекской ССР." },
+                { q: "Название её первого сборника (1932)?", a: "«Страницы жизни»." },
+                { q: "Место захоронения поэтессы в Ташкенте?", a: "Чигатайское кладбище." }
             ],
             medium: [
-                { q: "Кто переводил её стихи? (3 фамилии)", a: "Нейман, Липкин, Гребнев, Сомова." },
-                { q: "Для какой оперы она создала либретто?", a: "«Зайнаб и Омон»." },
-                { q: "Чьё имя носила её премия 1970 года?", a: "Имени Хамзы." },
-                { q: "В каком году памятник стал бронзовым?", a: "В 2014 году." },
-                { q: "Сколько у неё орденов Ленина?", a: "Два: получены в 1959 и 1984 годах." }
+                { q: "Назовите трех переводчиков её стихов на русский.", a: "Нейман, Липкин, Гребнев, Сомова." },
+                { q: "Для какой оперы она написала либретто?", a: "«Зайнаб и Омон»." },
+                { q: "В честь кого названа премия, полученная ею в 1970?", a: "Имени Хамзы." },
+                { q: "Год замены памятника на бронзовый?", a: "В 2014 году (установлен в 2008)." },
+                { q: "Сколько раз награждена орденом Ленина?", a: "Дважды: в 1959 и 1984 годах." }
             ],
             blitz: [
-                { q: "На основе чьей поэмы написана пьеса «Семург»?", a: "Её мужа — Хамида Алимджана." },
-                { q: "За какой цикл она получила Госпремию СССР?", a: "«Строки памяти» и цикл «Радуга»." },
-                { q: "Возраст для премии им. Зульфии?", a: "От 14 до 30 лет." },
-                { q: "О чем был первый сборник «Страницы жизни»?", a: "О молодежи, дружбе и красоте души." },
-                { q: "Награда независимого Узбекистана (1994)?", a: "Орден «Дустлик»." }
+                { q: "Чья поэма стала основой для её пьесы «Семург»?", a: "Её мужа — Хамида Алимджана." },
+                { q: "Книга 1974 года, отмеченная Госпремией СССР?", a: "«Строки памяти»." },
+                { q: "Возрастной диапазон для премии имени Зульфии?", a: "От 14 до 30 лет." },
+                { q: "Три главные темы сборника «Страницы жизни»?", a: "Молодежь, дружба, красота души." },
+                { q: "Орден независимого Узбекистана (1994)?", a: "Орден «Дустлик»." }
             ]
         };
 
         let current = 'easy';
+        let items = [];
         let idx = 0;
 
         function setMode(mode, el) {
-            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             el.classList.add('active');
             current = mode;
+            
+            const colors = { easy: '#007aff', medium: '#af52de', blitz: '#ff2d55' };
+            const labels = { easy: 'БАЗОВЫЙ', medium: 'ЭКСПЕРТ', blitz: 'БЛИЦ-РЕЖИМ' };
+            
+            document.documentElement.style.setProperty('--active-accent', colors[mode]);
+            document.getElementById('diff-badge').textContent = labels[mode];
+            document.getElementById('glow').style.background = `radial-gradient(circle, ${colors[mode]}, transparent 70%)`;
+            
+            init();
+        }
+
+        function init() {
+            items = db[current];
             idx = 0;
-            render();
             createDots();
+            render();
         }
 
         function createDots() {
-            const d = document.getElementById('dots');
-            d.innerHTML = '';
-            data[current].forEach((_, i) => {
+            const container = document.getElementById('dots');
+            container.innerHTML = '';
+            items.forEach((_, i) => {
                 const dot = document.createElement('div');
                 dot.className = 'dot' + (i === 0 ? ' active' : '');
-                d.appendChild(dot);
+                container.appendChild(dot);
             });
         }
 
         function flip() { document.getElementById('card').classList.toggle('flipped'); }
 
         function render() {
-            const card = document.getElementById('card');
-            card.classList.remove('flipped');
+            document.getElementById('card').classList.remove('flipped');
             setTimeout(() => {
-                document.getElementById('q-text').textContent = data[current][idx].q;
-                document.getElementById('a-text').textContent = data[current][idx].a;
-                document.getElementById('counter').textContent = `${idx + 1} / ${data[current].length}`;
-                document.querySelectorAll('.dot').forEach((d, i) => d.className = i === idx ? 'dot active' : 'dot');
+                document.getElementById('q-text').textContent = items[idx].q;
+                document.getElementById('a-text').textContent = items[idx].a;
+                document.getElementById('counter').textContent = `${idx + 1} / ${items.length}`;
+                
+                document.querySelectorAll('.dot').forEach((d, i) => {
+                    d.className = 'dot' + (i === idx ? ' active' : '');
+                });
+
                 document.getElementById('prevBtn').disabled = idx === 0;
-                document.getElementById('nextBtn').disabled = idx === data[current].length - 1;
+                document.getElementById('nextBtn').disabled = idx === items.length - 1;
             }, 150);
         }
 
-        function next() { if (idx < data[current].length - 1) { idx++; render(); } }
+        function next() { if (idx < items.length - 1) { idx++; render(); } }
         function prev() { if (idx > 0) { idx--; render(); } }
+
+        // ЭФФЕКТ ЧАСТИЦ
+        const canvas = document.getElementById('particles');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedX = Math.random() * 0.4 - 0.2;
+                this.speedY = Math.random() * 0.4 - 0.2;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x > canvas.width) this.x = 0;
+                if (this.x < 0) this.x = canvas.width;
+                if (this.y > canvas.height) this.y = 0;
+                if (this.y < 0) this.y = canvas.height;
+            }
+            draw() {
+                ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--active-accent');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+        for(let i=0; i<70; i++) particles.push(new Particle());
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animate);
+        }
+        animate();
 
         document.addEventListener('keydown', (e) => {
             if (e.code === 'Space') flip();
@@ -332,7 +383,7 @@
             if (e.code === 'ArrowLeft') prev();
         });
 
-        setMode('easy', document.querySelector('.mode-btn'));
+        init();
     </script>
 </body>
 </html>
