@@ -1,271 +1,340 @@
 <!DOCTYPE html>
 <html lang="ru">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Зульфия: Викторина</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Zulfiya: Digital Heritage</title>
     <style>
         :root {
-            --bg-color: #121417;
-            --card-bg: #1e1f20;
-            --accent-color: #a8c7fa;
-            --text-main: #e3e3e3;
-            --text-sub: #c4c7c5;
+            --accent-easy: #00f2fe;
+            --accent-medium: #7000ff;
+            --accent-blitz: #ff007a;
+            --bg-dark: #05070a;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
         }
 
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
         body {
-            background-color: var(--bg-color);
-            background-image:
-                radial-gradient(circle at 15% 50%, rgba(45, 60, 50, 0.3) 0%, transparent 45%),
-                radial-gradient(circle at 85% 50%, rgba(30, 35, 70, 0.3) 0%, transparent 45%);
-            color: var(--text-main);
-            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-dark);
+            color: #fff;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
+            overflow: hidden;
+            perspective: 1000px;
         }
 
-        /* Адаптивный селектор сложности */
-        .difficulty-selector {
+        /* Динамический живой фон */
+        .bg-glow {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle at 50% 50%, var(--accent-easy), transparent 50%);
+            filter: blur(80px);
+            opacity: 0.15;
+            z-index: -1;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Хедер */
+        header {
+            position: absolute;
+            top: 40px;
+            text-align: center;
+            z-index: 10;
+        }
+
+        .logo {
+            font-size: 12px;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            opacity: 0.5;
+            margin-bottom: 8px;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 300;
+            background: linear-gradient(to bottom, #fff, #888);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Переключатель сложности - High Tech */
+        .nav-chips {
             display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 8px;
-            margin-bottom: 20px;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 6px;
-            border-radius: 25px;
-            width: 100%;
-            max-width: 400px;
+            gap: 10px;
+            margin-bottom: 40px;
+            z-index: 10;
         }
 
-        .diff-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-sub);
-            padding: 8px 16px;
-            border-radius: 20px;
-            cursor: pointer;
+        .chip {
+            padding: 10px 20px;
+            border-radius: 12px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            color: rgba(255,255,255,0.5);
             font-size: 13px;
-            flex: 1;
-            min-width: 80px;
-            transition: 0.3s;
-        }
-
-        .diff-btn.active {
-            background: var(--accent-color);
-            color: #121417;
-        }
-
-        /* Адаптивная карточка */
-        .card-container {
-            perspective: 1200px;
-            width: 100%;
-            max-width: 400px;
-            /* Ограничение для десктопа */
-            height: 65vh;
-            /* Высота зависит от экрана */
-            max-height: 500px;
             cursor: pointer;
+            transition: 0.4s all;
+            backdrop-filter: blur(10px);
+        }
+
+        .chip.active {
+            color: #fff;
+            border-color: var(--active-color);
+            box-shadow: 0 0 20px var(--active-color-alpha);
+            transform: translateY(-2px);
+        }
+
+        /* Контейнер карточки */
+        .stage {
+            width: 90vw;
+            max-width: 420px;
+            height: 540px;
+            position: relative;
+            z-index: 5;
         }
 
         .card {
             width: 100%;
             height: 100%;
             position: relative;
-            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
             transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        .card.flipped {
-            transform: rotateY(180deg);
-        }
+        .card.flipped { transform: rotateY(180deg); }
 
-        .card-face {
+        .face {
             position: absolute;
             width: 100%;
             height: 100%;
             backface-visibility: hidden;
+            border-radius: 40px;
+            padding: 40px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 25px;
-            box-sizing: border-box;
-            border-radius: 24px;
-            text-align: center;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            overflow-y: auto;
-            /* Если текст очень длинный, появится скролл внутри */
+            justify-content: space-between;
+            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(25px);
+            box-shadow: 0 40px 100px rgba(0,0,0,0.5);
         }
 
-        .front {
-            background: var(--card-bg);
-            font-size: clamp(18px, 5vw, 22px);
-            /* Резиновый шрифт */
-        }
+        .face.back { transform: rotateY(180deg); border-color: rgba(255,255,255,0.2); }
 
-        .back {
-            background: #28292a;
-            transform: rotateY(180deg);
-            font-size: clamp(16px, 4.5vw, 19px);
-            color: var(--text-sub);
-        }
-
-        .hint {
-            margin-top: 15px;
+        .card-category {
             font-size: 10px;
-            color: #80868b;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 3px;
+            color: var(--active-color);
+            font-weight: 700;
         }
 
-        /* Навигация */
+        .content {
+            font-size: 24px;
+            line-height: 1.4;
+            font-weight: 400;
+            text-align: left;
+        }
+
+        .back .content {
+            font-size: 18px;
+            color: rgba(255,255,255,0.8);
+            line-height: 1.6;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            opacity: 0.4;
+            font-size: 12px;
+        }
+
+        /* Кастомные кнопки управления */
         .controls {
-            margin-top: 25px;
+            margin-top: 50px;
             display: flex;
             align-items: center;
-            gap: 15px;
-            width: 100%;
+            gap: 30px;
+        }
+
+        .btn-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            color: white;
+            display: flex;
+            align-items: center;
             justify-content: center;
+            cursor: pointer;
+            transition: 0.3s;
+            backdrop-filter: blur(10px);
         }
 
-        .nav-btn {
-            background: rgba(255, 255, 255, 0.07);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            color: var(--accent-color);
-            padding: 12px 30px;
-            border-radius: 100px;
-            font-size: 20px;
-            touch-action: manipulation;
-            /* Убирает задержку клика на телефонах */
+        .btn-circle:hover:not(:disabled) {
+            background: rgba(255,255,255,0.1);
+            transform: scale(1.1);
         }
 
-        .nav-btn:disabled {
-            opacity: 0.1;
+        .btn-circle:disabled { opacity: 0.1; cursor: not-allowed; }
+
+        #counter { font-family: 'Monaco', monospace; font-size: 14px; letter-spacing: 2px; }
+
+        /* Детали "Силы": индикатор прогресса сверху */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: var(--active-color);
+            box-shadow: 0 0 15px var(--active-color);
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        #counter {
-            font-size: 14px;
-            color: var(--text-sub);
-            min-width: 60px;
-            text-align: center;
-        }
-
-        /* Для совсем маленьких экранов */
-        @media (max-height: 600px) {
-            .card-container {
-                height: 50vh;
-            }
-
-            .difficulty-selector {
-                margin-bottom: 10px;
-            }
+        @media (max-width: 480px) {
+            .stage { height: 70vh; }
+            h1 { font-size: 22px; }
+            .content { font-size: 20px; }
         }
     </style>
 </head>
-
 <body>
 
-    <div class="difficulty-selector">
-        <button class="diff-btn active" onclick="setDifficulty('easy', this)">Базовый</button>
-        <button class="diff-btn" onclick="setDifficulty('medium', this)">Средний</button>
-        <button class="diff-btn" onclick="setDifficulty('blitz', this)">Сложный</button>
+    <div class="progress-bar" id="progress"></div>
+    <div class="bg-glow" id="glow"></div>
+
+    <header>
+        <div class="logo">Interactive Quiz</div>
+        <h1 id="diff-title">Zulphiya: Heritage</h1>
+    </header>
+
+    <div class="nav-chips">
+        <button class="chip active" onclick="setDiff('easy', this, '#00f2fe')">Beginner</button>
+        <button class="chip" onclick="setDiff('medium', this, '#7000ff')">Expert</button>
+        <button class="chip" onclick="setDiff('blitz', this, '#ff007a')">Blitz</button>
     </div>
 
-    <div class="card-container" onclick="toggleFlip()">
+    <div class="stage" onclick="toggleFlip()">
         <div class="card" id="card">
-            <div class="card-face front">
-                <div id="question">Загрузка...</div>
-                <div class="hint">Нажмите для ответа</div>
+            <div class="face front">
+                <div class="card-category" id="cat-name">Question</div>
+                <div class="content" id="q-text">Загрузка данных...</div>
+                <div class="card-footer">
+                    <span>TAP TO REVEAL</span>
+                    <span id="card-id">01</span>
+                </div>
             </div>
-            <div class="card-face back">
-                <div id="answer">...</div>
-                <div class="hint">Вернуться к вопросу</div>
+            <div class="face back">
+                <div class="card-category">Insight</div>
+                <div class="content" id="a-text">...</div>
+                <div class="card-footer">
+                    <span>TAP TO RETURN</span>
+                    <span>ANS</span>
+                </div>
             </div>
         </div>
     </div>
 
     <div class="controls">
-        <button class="nav-btn" id="prevBtn" onclick="event.stopPropagation(); prevCard();">←</button>
-        <span id="counter">1 / 5</span>
-        <button class="nav-btn" id="nextBtn" onclick="event.stopPropagation(); nextCard();">→</button>
+        <button class="btn-circle" id="prevBtn" onclick="event.stopPropagation(); prevCard();">←</button>
+        <div id="counter">01 / 05</div>
+        <button class="btn-circle" id="nextBtn" onclick="event.stopPropagation(); nextCard();">→</button>
     </div>
 
     <script>
         const data = {
             easy: [
-                { q: "Какое конкретное профессиональное учебное заведение окончила Зульфия?", a: "Она окончила женское педагогическое училище." },
-                { q: "В каком году и в какой день Зульфие официально было присвоено звание «Народный поэт Узбекской ССР»?", a: "24 ноября 1965 года." },
-                { q: "Депутатом какого органа власти она избиралась (10-го и 11-го созывов)?", a: "Верховного Совета Узбекской ССР." },
-                { q: "Как назывался самый первый сборник стихов поэтессы (1932)?", a: "«Страницы жизни»; темы молодежи, дружбе и красоты человеческой души." },
-                { q: "На каком известном кладбище в Ташкенте похоронена поэтесса?", a: "На Чигатайском кладбище." }
+                { q: "Где Зульфия получила профессиональное образование?", a: "В женском педагогическом училище." },
+                { q: "Когда ей было присвоено звание Народного поэта УзССР?", a: "24 ноября 1965 года." },
+                { q: "В какой государственный орган она избиралась депутатом?", a: "В Верховный Совет Узбекской ССР." },
+                { q: "Название её дебютного сборника 1932 года?", a: "«Страницы жизни»." },
+                { q: "Место её вечного упокоения в Ташкенте?", a: "Чигатайское кладбище." }
             ],
             medium: [
-                { q: "Назовите фамилии как минимум трёх известных советских переводчиков, работавших над её текстами.", a: "Ю. Нейман, С. Липкин, Н. Гребнев, С. Сомова." },
-                { q: "Для какого именно оперного произведения Зульфия написала либретто?", a: "Либретто к опере «Зайнаб и Омон»." },
-                { q: "В честь какого выдающегося деятеля культуры была названа премия УзССР, полученная ею в 1970 году?", a: "Государственная премия Узбекской ССР имени Хамзы." },
-                { q: "В каком году памятник Зульфие в Ташкенте заменили на бронзовый?", a: "Установлен 1 марта 2008 г. (гипс), заменён на бронзу в 2014 году." },
-                { q: "Сколько раз Зульфия была награждена орденом Ленина?", a: "Дважды: в 1959 и в 1984 годах." }
+                { q: "Назовите мастеров, переводивших её стихи на русский язык.", a: "Ю. Нейман, С. Липкин, Н. Гребнев, С. Сомова." },
+                { q: "Для какой знаменитой оперы Зульфия написала либретто?", a: "Для оперы «Зайнаб и Омон»." },
+                { q: "Имя деятеля культуры в названии её премии 1970 года?", a: "Хамза Хакимзаде Ниязи." },
+                { q: "Хронология памятника: гипс и бронза.", a: "2008 год — установка (гипс), 2014 год — замена на бронзу." },
+                { q: "Сколько высших орденов Ленина получила поэтесса?", a: "Дважды: в 1959 и 1984 годах." }
             ],
             blitz: [
-                { q: "Драматургия: Назовите оперу с её либретто и автора поэмы, ставшей основой для её пьесы «Семург»?", a: "Опера «Зайнаб и Омон». Пьеса «Семург» создана по мотивам поэмы её мужа — Хамида Алимджана." },
-                { q: "Высшее признание: За какую книгу стихов 1974 года и какой цикл она получила Госпремию СССР?", a: "За книгу стихов «Строки памяти» (1974) и поэтический цикл «Радуга»." },
-                { q: "Премия Зульфии: Каков возрастной диапазон для претенденток и в какой день её вручают?", a: "От 14 до 30 лет. Вручается ежегодно в канун 8 марта." },
-                { q: "Первый сборник: Какие три основные философские темы поднимались в «Страницах жизни»?", a: "Темы молодежи, дружбы и красоты человеческой души." },
-                { q: "Государственные награды: Какое звание она получила в 1984 году и какой орден в 1994 году?", a: "1984 — Герой Социалистического Труда. 1994 — орден «Дустлик»." }
+                { q: "Связь с Хамидом Алимджаном в её драматургии?", a: "Она написала пьесу «Семург» по мотивам поэмы своего мужа." },
+                { q: "За какие циклы она получила Госпремию СССР в 1976?", a: "За книгу «Строки памяти» и цикл «Радуга»." },
+                { q: "Возрастной ценз премии имени Зульфии?", a: "Для одаренных девушек от 14 до 30 лет." },
+                { q: "Главные философские темы первого сборника?", a: "Молодость, дружба и красота человеческой души." },
+                { q: "Высшая награда независимого Узбекистана у Зульфии?", a: "Орден «Дустлик», врученный в 1994 году." }
             ]
         };
 
-        let currentDifficulty = 'easy';
+        let currentMode = 'easy';
         let cards = [];
         let currentIndex = 0;
+        let colors = { easy: '#00f2fe', medium: '#7000ff', blitz: '#ff007a' };
 
-        function setDifficulty(level, btn) {
-            document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+        function setDiff(mode, btn, color) {
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
             btn.classList.add('active');
-            currentDifficulty = level;
-            initLevel();
+            
+            currentMode = mode;
+            document.body.style.setProperty('--active-color', color);
+            document.body.style.setProperty('--active-color-alpha', color + '44');
+            document.getElementById('glow').style.background = `radial-gradient(circle at 50% 50%, ${color}, transparent 50%)`;
+            
+            initMode();
         }
 
-        function initLevel() {
-            cards = [...data[currentDifficulty]]; // Можно добавить .sort(() => Math.random() - 0.5) для перемешивания
+        function initMode() {
+            cards = [...data[currentMode]];
             currentIndex = 0;
-            updateCard();
+            updateUI();
         }
 
         function toggleFlip() { document.getElementById('card').classList.toggle('flipped'); }
 
-        function updateCard() {
-            const cardEl = document.getElementById('card');
-            cardEl.classList.remove('flipped');
+        function updateUI() {
+            const card = document.getElementById('card');
+            card.classList.remove('flipped');
+            
             setTimeout(() => {
-                document.getElementById('question').textContent = cards[currentIndex].q;
-                document.getElementById('answer').textContent = cards[currentIndex].a;
-                document.getElementById('counter').textContent = `${currentIndex + 1} / ${cards.length}`;
+                document.getElementById('q-text').textContent = cards[currentIndex].q;
+                document.getElementById('a-text').textContent = cards[currentIndex].a;
+                document.getElementById('counter').textContent = `${(currentIndex + 1).toString().padStart(2, '0')} / ${cards.length.toString().padStart(2, '0')}`;
+                document.getElementById('card-id').textContent = (currentIndex + 1).toString().padStart(2, '0');
+                
+                // Прогресс бар
+                const progress = ((currentIndex + 1) / cards.length) * 100;
+                document.getElementById('progress').style.width = progress + '%';
+                
                 document.getElementById('prevBtn').disabled = currentIndex === 0;
                 document.getElementById('nextBtn').disabled = currentIndex === cards.length - 1;
             }, 150);
         }
 
-        function nextCard() { if (currentIndex < cards.length - 1) { currentIndex++; updateCard(); } }
-        function prevCard() { if (currentIndex > 0) { currentIndex--; updateCard(); } }
+        function nextCard() { if (currentIndex < cards.length - 1) { currentIndex++; updateUI(); } }
+        function prevCard() { if (currentIndex > 0) { currentIndex--; updateUI(); } }
 
+        // Инициализация первой темы
+        setDiff('easy', document.querySelector('.chip'), '#00f2fe');
+
+        // Клавиатура
         document.addEventListener('keydown', (e) => {
             if (e.code === 'Space') toggleFlip();
             if (e.code === 'ArrowRight') nextCard();
             if (e.code === 'ArrowLeft') prevCard();
         });
-
-        initLevel();
     </script>
 </body>
-
 </html>
