@@ -219,9 +219,9 @@
     </header>
 
     <div class="selector">
-        <div class="tab active" onclick="setMode('easy', this)">Начальный</div>
+        <div class="tab active" onclick="setMode('easy', this)">Базовый</div>
         <div class="tab" onclick="setMode('medium', this)">Средний</div>
-        <div class="tab" onclick="setMode('blitz', this)">Блиц</div>
+        <div class="tab" onclick="setMode('blitz', this)">Сложный</div>
     </div>
 
     <div class="stage" onclick="flip()">
@@ -285,7 +285,7 @@
             current = mode;
             
             const colors = { easy: '#007aff', medium: '#af52de', blitz: '#ff2d55' };
-            const labels = { easy: 'БАЗОВЫЙ', medium: 'ЭКСПЕРТ', blitz: 'БЛИЦ-РЕЖИМ' };
+            const labels = { easy: 'БАЗОВЫЙ', medium: 'СРЕДНИЙ', blitz: 'СЛОЖНЫЙ' };
             
             document.documentElement.style.setProperty('--active-accent', colors[mode]);
             document.getElementById('diff-badge').textContent = labels[mode];
@@ -387,3 +387,4 @@
     </script>
 </body>
 </html>
+
